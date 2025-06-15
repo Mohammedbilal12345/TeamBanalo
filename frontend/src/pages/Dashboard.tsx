@@ -263,12 +263,18 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div className="mt-8 pt-6 border-t border-gray-700/50">
-                <Link to="/hackathons">
+                {/* "Browse All Hackathons" - now redirects to Devfolio */}
+                <a 
+                  href="https://devfolio.co/hackathons" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="w-full block" 
+                >
                   <Button variant="ghost" className="w-full bg-gray-800/30 hover:bg-gray-700/50 text-gray-200 hover:text-white border border-gray-700/50 hover:border-gray-600/50 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-electric-blue/50">
                     Browse All Hackathons
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
           </div>
@@ -314,11 +320,17 @@ const Dashboard: React.FC = () => {
                   3 hackathons matching your interests in web development and AI 
                   are happening near you.
                 </p>
-                <Link to="/hackathons">
+                {/* "Explore Events" - now redirects to Devfolio */}
+                <a
+                  href="https://devfolio.co/hackathons"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full block" 
+                >
                   <Button className="bg-gradient-to-r from-electric-teal to-neon-green hover:from-neon-green hover:to-electric-teal text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-electric-teal/50 focus:ring-offset-2 focus:ring-offset-dark-200">
                     Explore Events
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
           </div>

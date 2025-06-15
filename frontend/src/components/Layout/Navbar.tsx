@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
+import { Compass } from "lucide-react";
 import { User, Settings, LogOut, Search, Users, User as UserIcon } from 'lucide-react';
 
 const Navbar: React.FC = () => {
@@ -55,15 +56,15 @@ const Navbar: React.FC = () => {
               </Link>
               
               <Link 
-                to="/profile" 
+                to="/explore" 
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                  location.pathname === '/profile' 
+                  location.pathname === '/explore' 
                     ? 'text-electric-blue bg-electric-blue/10' 
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <User className="w-4 h-4" />
-                <span>Profile</span>
+                <Compass className="w-4 h-4" />
+                <span>Explore</span>
               </Link>
             </div>
           )}
@@ -88,11 +89,13 @@ const Navbar: React.FC = () => {
                     <p className="text-sm font-medium text-white">{profile?.full_name || user.email}</p>
                     <p className="text-xs text-gray-400">{user.email}</p>
                   </div>
+                  <Link to="/profile">
                   <div className="w-8 h-8 bg-electric-gradient rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-semibold">
                       {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
                     </span>
                   </div>
+                  </Link>
                 </div>
 
                 {/* Dropdown Menu */}
