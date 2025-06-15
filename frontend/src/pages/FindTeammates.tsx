@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Zap,
-  Star,
-  MessageSquare,
-  User,
-  Award
-} from 'lucide-react';
+import { User, Plus, X, Search, MapPin, Calendar, Users, Zap, ArrowRight, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 const FindTeammates: React.FC = () => {
   const { user } = useAuth();
 
+  // For teammate search and modal
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [search, setSearch] = useState('');
+
+  // For hackathon posting form
   const [searchFilters, setSearchFilters] = useState({
     hackathonName: '',
     date: '',
@@ -29,11 +25,36 @@ const FindTeammates: React.FC = () => {
     skillsNeeded: '',
     teamSize: '4'
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Fetch all users and their hackathon postings
+
+
+useEffect(() => {
+  const fetchProfiles = async () => {
+    setLoading(true);
+    // Fetch all profiles except the current user
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, avatar_url, bio, skills')
+      .neq('id', user.id); // Exclude current user
+    setProfiles(profilesData || []);
+    setLoading(false);
+  };
+  fetchProfiles();
+}, [user]);
+
+
+  // For teammate search
+  const filteredProfiles = profiles.filter(profile =>
+    (profile.full_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+    (profile.skills?.join(',').toLowerCase() || '').includes(search.toLowerCase()) ||
+    (profile.bio?.toLowerCase() || '').includes(search.toLowerCase())
+  );
+
+  // Posting form handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setSearchFilters(prev => ({
       ...prev,
@@ -41,15 +62,6 @@ const FindTeammates: React.FC = () => {
     }));
   };
 
-  const generateWithAI = () => {
-    setSearchFilters(prev => ({
-      ...prev,
-      projectDescription: 'A mobile app that uses AI to help students find study groups and track their learning progress. Features include smart matching, progress analytics, and collaborative study tools.',
-      skillsNeeded: 'React Native, Node.js, Machine Learning, UI/UX Design'
-    }));
-  };
-
-  // This replaces the old findTeammates function
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitSuccess(false);
@@ -61,7 +73,6 @@ const FindTeammates: React.FC = () => {
       return;
     }
 
-    // Prepare data for DB
     const insertData = {
       user_id: user.id,
       hackathon_name: searchFilters.hackathonName,
@@ -74,9 +85,7 @@ const FindTeammates: React.FC = () => {
         : [],
     };
 
-    const { error } = await supabase
-      .from('hackathons')
-      .insert([insertData]);
+    const { error } = await supabase.from('hackathons').insert([insertData]);
 
     if (error) {
       setSubmitError("Failed to submit hackathon: " + error.message);
@@ -86,166 +95,153 @@ const FindTeammates: React.FC = () => {
 
     setSubmitSuccess(true);
     setIsSubmitting(false);
-    // Optionally clear form
-    setSearchFilters({
-      hackathonName: '',
-      date: '',
-      location: '',
-      projectDescription: '',
-      skillsNeeded: '',
-      teamSize: '4'
-    });
+    setShowPostForm(false);
+    // Optionally: refresh profiles to show new posting
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-dark-100 to-dark-200 pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-dark-100 to-dark-200 pt-20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Find Your <span className="gradient-text">Perfect Teammates</span>
+            Find <span className="gradient-text">Teammates</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Tell us about your hackathon project and we'll help you find the ideal teammates with complementary skills.
+            Browse users, see their skills and hackathon posts, and reach out to collaborate!
           </p>
         </div>
 
-        {/* Search Form */}
-        <div className="glass-card rounded-2xl p-8 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Project Details */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Hackathon Details</h3>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-white mb-2 block">Hackathon Name</Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <Input
-                        name="hackathonName"
-                        value={searchFilters.hackathonName}
-                        onChange={handleInputChange}
-                        className="input-dark pl-11"
-                        placeholder="e.g., TechCrunch Disrupt 2025"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-white mb-2 block">Date</Label>
-                      <Input
-                        name="date"
-                        type="date"
-                        value={searchFilters.date}
-                        onChange={handleInputChange}
-                        className="input-dark"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-white mb-2 block">Location</Label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <Input
-                          name="location"
-                          value={searchFilters.location}
-                          onChange={handleInputChange}
-                          className="input-dark pl-11"
-                          placeholder="San Francisco, CA"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-white mb-2 block">Team Size</Label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <select
-                        name="teamSize"
-                        value={searchFilters.teamSize}
-                        onChange={handleInputChange}
-                        className="input-dark pl-11 w-full"
-                      >
-                        <option value="2">2 members</option>
-                        <option value="3">3 members</option>
-                        <option value="4">4 members</option>
-                        <option value="5">5 members</option>
-                        <option value="6">6+ members</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Search Bar */}
+        <div className="mb-8 flex justify-center">
+          <Input
+            className="w-full max-w-md"
+            placeholder="Search by name, skills, or bio..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
 
-            {/* Right Column - Project Description */}
-            <div className="space-y-6">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-white">Project Description</h3>
-                  <Button
-                    onClick={generateWithAI}
-                    variant="outline"
-                    className="btn-ghost text-sm"
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    Generate with AI
-                  </Button>
-                </div>
+        {/* All Users */}
+        {loading ? (
+          <div className="text-gray-400 text-center py-12">Loading teammates...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredProfiles.map(profile => (
+              <div
+  key={profile.id}
+  className="bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg flex flex-col gap-3"
+>
+  <div className="flex items-center gap-4 mb-2">
+    <img
+      src={profile.avatar_url || '/default-avatar.png'}
+      alt={profile.full_name}
+      className="w-12 h-12 rounded-full object-cover border-2 border-electric-blue"
+    />
+    <div>
+      <h3 className="text-lg font-bold text-white">{profile.full_name}</h3>
+      <div className="text-xs text-gray-400">{profile.email}</div>
+    </div>
+  </div>
+  <div className="mb-2 text-gray-300 text-sm">{profile.bio}</div>
+  <div className="flex flex-wrap gap-2 mb-2">
+    {profile.skills?.map((skill: string) => (
+      <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+    ))}
+  </div>
+  <a
+    href={`mailto:${profile.email}`}
+    className="mt-2 w-full inline-flex items-center justify-center border border-electric-blue text-electric-blue rounded-lg py-2 px-4 hover:bg-electric-blue/10 transition"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <MessageSquare className="w-4 h-4 mr-2" /> Reach Out
+  </a>
+</div>
+
+            ))}
+          </div>
+        )}
+
+        {/* Floating button to post new hackathon */}
+        <button
+          className="fixed bottom-8 right-8 z-50 bg-electric-blue hover:bg-electric-teal text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all duration-200"
+          onClick={() => setShowPostForm(true)}
+          title="Post New Hackathon"
+        >
+          <Plus className="w-7 h-7" />
+        </button>
+
+        {/* Modal for posting new hackathon */}
+        {showPostForm && (
+          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+            <div className="bg-dark-200 rounded-2xl p-8 max-w-lg w-full relative">
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                onClick={() => setShowPostForm(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h2 className="text-2xl font-bold text-white mb-6">Post a Hackathon</h2>
+              {/* Same form as before */}
+              <div className="space-y-4">
+                <Input
+                  name="hackathonName"
+                  value={searchFilters.hackathonName}
+                  onChange={handleInputChange}
+                  className="input-dark"
+                  placeholder="Hackathon Name"
+                />
+                <Input
+                  name="date"
+                  type="date"
+                  value={searchFilters.date}
+                  onChange={handleInputChange}
+                  className="input-dark"
+                  placeholder="Date"
+                />
+                <Input
+                  name="location"
+                  value={searchFilters.location}
+                  onChange={handleInputChange}
+                  className="input-dark"
+                  placeholder="Location"
+                />
+                <Input
+                  name="teamSize"
+                  value={searchFilters.teamSize}
+                  onChange={handleInputChange}
+                  className="input-dark"
+                  placeholder="Team Size"
+                />
                 <Textarea
                   name="projectDescription"
                   value={searchFilters.projectDescription}
                   onChange={handleInputChange}
-                  className="input-dark min-h-[120px]"
-                  placeholder="Describe your project idea, what problem it solves, and what you want to build..."
+                  className="input-dark"
+                  placeholder="Project Description"
                 />
-              </div>
-              <div>
-                <Label className="text-white mb-2 block">Skills Needed</Label>
                 <Textarea
                   name="skillsNeeded"
                   value={searchFilters.skillsNeeded}
                   onChange={handleInputChange}
-                  className="input-dark min-h-[80px]"
-                  placeholder="List the skills and technologies you need teammates to have (e.g., React, Python, UI/UX Design, Machine Learning)"
+                  className="input-dark"
+                  placeholder="Skills Needed (comma separated)"
                 />
+                <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Posting..." : "Post Hackathon"}
+                </Button>
+                {submitSuccess && (
+                  <div className="mt-2 text-green-400 text-center">Hackathon posted!</div>
+                )}
+                {submitError && (
+                  <div className="mt-2 text-red-400 text-center">{submitError}</div>
+                )}
               </div>
             </div>
           </div>
+        )}
 
-          {/* Submit Button */}
-          <div className="mt-8 text-center">
-            <Button
-              onClick={handleSubmit}
-              className="btn-electric text-lg px-8 py-4 h-auto"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="spinner mr-3" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5 mr-2" />
-                  Find Teammates
-                </>
-              )}
-            </Button>
-            {submitSuccess && (
-              <div className="mt-4 text-green-400 font-semibold">
-                Hackathon details submitted successfully!
-              </div>
-            )}
-            {submitError && (
-              <div className="mt-4 text-red-400 font-semibold">
-                {submitError}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results and other UI (not changed, you can remove or keep as needed) */}
       </div>
     </div>
   );

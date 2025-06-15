@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 import { 
   User, 
   Search, 
@@ -12,7 +14,8 @@ import {
   Calendar,
   ArrowRight,
   Zap,
-  Target
+  Target,
+  Trash
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -36,6 +39,8 @@ const Dashboard: React.FC = () => {
 
   const profileCompletion = calculateProfileCompletion();
   const isProfileIncomplete = profileCompletion < 80;
+
+  
 
   const quickActions = [
     {
@@ -61,6 +66,7 @@ const Dashboard: React.FC = () => {
       color: 'from-electric-teal to-neon-green'
     }
   ];
+
 
   const recentActivity = [
     {
@@ -103,6 +109,42 @@ const Dashboard: React.FC = () => {
       participants: 400
     }
   ];
+
+   // --- NEW: Fetch and display user's own posts ---
+  const [myHackathons, setMyHackathons] = useState<any[]>([]);
+  const [myProjects, setMyProjects] = useState<any[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+   useEffect(() => {
+    if (!user) return;
+    setLoadingPosts(true);
+    // Fetch user's hackathons
+    supabase
+      .from('hackathons')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setMyHackathons(data || []));
+    // Fetch user's projects
+    supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setMyProjects(data || []));
+    setLoadingPosts(false);
+  }, [user]);
+  // --- END NEW ---
+
+  const handleDeleteHackathon = async (id: string) => {
+  await supabase.from('hackathons').delete().eq('id', id);
+  setMyHackathons(myHackathons.filter(h => h.id !== id));
+};
+
+const handleDeleteProject = async (id: string) => {
+  await supabase.from('projects').delete().eq('id', id);
+  setMyProjects(myProjects.filter(p => p.id !== id));
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark-100 to-dark-200 pt-20">
@@ -205,6 +247,71 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* My Posts Section */}
+<div className="mb-12">
+  <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-6 sm:mb-8">My Posts</h2>
+  {loadingPosts ? (
+    <div className="text-gray-400">Loading your posts...</div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* User's Hackathons */}
+      {myHackathons.map(h => (
+  <div key={h.id} className="bg-dark-300/40 border border-gray-700/50 rounded-2xl p-6 shadow-lg relative">
+    <button
+      className="absolute top-4 right-4 text-red-500 hover:text-red-700 transition"
+      title="Delete"
+      onClick={() => handleDeleteHackathon(h.id)}
+    >
+      <Trash className="w-5 h-5" />
+    </button>
+    <h3 className="text-lg font-bold text-white mb-2">{h.hackathon_name}</h3>
+    <div className="text-gray-400 text-sm mb-1">{h.location} • {h.date}</div>
+    <div className="text-gray-300 text-sm mb-2">{h.project_description}</div>
+    <div className="flex flex-wrap gap-2 mb-2">
+      {h.skills_needed?.map((skill: string) => (
+        <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+      ))}
+    </div>
+    <div className="text-xs text-gray-400">Team size: {h.team_size || "?"}</div>
+  </div>
+))}
+{myProjects.map(p => (
+  <div key={p.id} className="bg-dark-300/40 border border-gray-700/50 rounded-2xl p-6 shadow-lg relative">
+    <button
+      className="absolute top-4 right-4 text-red-500 hover:text-red-700 transition"
+      title="Delete"
+      onClick={() => handleDeleteProject(p.id)}
+    >
+      <Trash className="w-5 h-5" />
+    </button>
+    <h3 className="text-lg font-bold text-white mb-2">{p.project_name}</h3>
+    <div className="text-gray-300 text-sm mb-2">{p.project_description}</div>
+    <div className="mb-2">
+      <span className="font-semibold text-xs text-gray-400">Required Skills: </span>
+      {p.required_skills?.map((skill: string) => (
+        <span key={skill} className="bg-green-900 text-green-200 px-2 py-0.5 rounded text-xs mr-1">{skill}</span>
+      ))}
+    </div>
+    <div>
+      <span className="font-semibold text-xs text-gray-400">Looking For: </span>
+      {p.looking_for?.map((role: string) => (
+        <span key={role} className="bg-purple-900 text-purple-200 px-2 py-0.5 rounded text-xs mr-1">{role}</span>
+      ))}
+    </div>
+  </div>
+))}
+     
+      {/* If no posts */}
+      {myHackathons.length === 0 && myProjects.length === 0 && (
+        <div className="text-gray-400 col-span-full text-center py-8">
+          You haven't posted any hackathons or projects yet.
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Enhanced Recent Activity */}
