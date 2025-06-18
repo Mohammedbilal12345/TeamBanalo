@@ -42,6 +42,7 @@ const Profile: React.FC = () => {
   const resumeInputRef = useRef<HTMLInputElement>(null);
   
   
+
   const [newSkill, setNewSkill] = useState('');
 
 const handleInputChange = (
@@ -85,6 +86,31 @@ const handleSave = async () => {
       hackathon_type: formData.hackathon_type,
       availability: formData.availability,
     });
+
+    // Call the summary API, but handle errors separately
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/generate-summary/${user.id}`);
+      if (!response.ok) {
+        // Optionally, show a warning toast if summary fails, but don't treat as fatal
+        toast({
+          title: "Profile updated",
+          description: "Profile updated, but summary generation failed.",
+          variant: "warning",
+        });
+        setIsEditing(false);
+        return;
+      }
+    } catch (summaryError) {
+      // Optionally, show a different toast if fetch itself fails
+      toast({
+        title: "Profile updated",
+        description: "Profile updated, but summary generation failed (network error).",
+        variant: "warning",
+      });
+      setIsEditing(false);
+      return;
+    }
+
     setIsEditing(false);
     toast({
       title: "Profile updated",
