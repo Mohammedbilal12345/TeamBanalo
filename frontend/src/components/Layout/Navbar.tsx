@@ -44,9 +44,9 @@ const Navbar: React.FC = () => {
               </Link>
               
               <Link 
-                to="/find-teammates" 
+                to="/explore-and-teammates" 
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
-                  location.pathname === '/find-teammates' 
+                  location.pathname === '/explore-and-teammates' 
                     ? 'text-electric-blue bg-electric-blue/10' 
                     : 'text-gray-300 hover:text-white hover:bg-white/5'
                 }`}

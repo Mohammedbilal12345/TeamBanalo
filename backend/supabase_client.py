@@ -20,3 +20,16 @@ def fetch_profile_by_id(profile_id):
 def update_profile_summary(user_id: str, summary: str) -> bool:
     response = supabase.table('profiles').update({"summary": summary}).eq('id', user_id).execute()
     return bool(response.data)
+
+
+def fetch_hackathon_by_id(hackathon_id):
+    response = supabase.table('hackathons').select(
+        'id, user_id, project_description, skills_needed').execute()
+    return response.data[0] if response.data else None
+
+def fetch_user_summaries(exclude_user_id):
+    response = supabase.table('profiles').select(
+        'id, email,full_name,skills, summary'
+    ).neq('id', exclude_user_id).execute()
+    return response.data
+

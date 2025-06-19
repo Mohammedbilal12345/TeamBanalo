@@ -1,67 +1,69 @@
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.output_parser import StrOutputParser
-from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from recommender import chain, parse_score
+from supabase_client import fetch_hackathon_by_id, fetch_user_summaries
+from fastapi.middleware.cors import CORSMiddleware
+import ast
 
-load_dotenv()
+app = FastAPI()
 
-# --- Step 1: Load and extract text from PDF resume ---
-pdf_path = "backend/Musharraf-Stirring Minds.pdf"  # Replace with actual PDF path
-loader = PyPDFLoader(pdf_path)
-documents = loader.load()
-resume_text = "\n".join([doc.page_content for doc in documents])
-
-# --- Step 2: Define prompt template with system and human messages ---
-system_prompt = (
-    "You are an expert AI assistant specialized in generating concise, matchmaking-ready user summaries for a hackathon team formation platform. "
-    "When analyzing the user's resume, give the highest priority and focus to the skills explicitly mentioned in the project descriptions section of the resume, as these reflect practical and applied expertise. "
-    "Next, consider the broader set of skills mentioned anywhere else in the resume, giving them moderate weight. "
-    "Finally, incorporate the skills passed directly as input, but assign them the least weight compared to the resume-derived skills. "
-    "Your summary should clearly highlight the user's strongest technical skills based on this weighted approach, relevant experience, preferred team setup, and hackathon participation preferences. "
-    "The summary should be concise (3-4 sentences) and optimized for AI-based matchmaking and recommendations."
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or replace with your frontend URL for better security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
+class RecommendationRequest(BaseModel):
+    hackathon_id: str
+    poster_id: str
 
-messages = [
-    ("system",
-    system_prompt
-    ),
-    ("human",
-     "Resume:\n{resume_text}\n\n"
-     "Skills: {skills}\n\n"
-     "Hackathon Preferences:\n"
-     "- Preferred team size: {team_size_pref}\n"
-     "- Experience level: {exp_level}\n"
-     "- Hackathon type: {hackathon_type}\n"
-     "- Availability: {availability}\n\n"
-     "Summary:"
-    ),
-]
+@app.post("/recommend-team-mates")
+async def recommend_team_mates_api(req: RecommendationRequest):
+    hackathon = fetch_hackathon_by_id(req.hackathon_id)
+    if not hackathon:  # Now checks for None instead of empty list
+        raise HTTPException(status_code=404, detail="Hackathon not found")
+    
+    skills = hackathon['skills_needed']
+    if isinstance(skills, str):
+        try:
+            skills_list = ast.literal_eval(skills)
+            if isinstance(skills_list, list):
+                skills = ', '.join(skills_list)
+            else:
+                skills = str(skills)
+        except Exception:
+            skills = str(skills)
 
-prompt_template = ChatPromptTemplate.from_messages(messages)
+    # Access fields directly from hackathon dict
+    hackathon_text = (
+        f"{hackathon['project_description']} "
+        f"Skills needed: {skills}. "
 
-# --- Step 3: Initialize Gemini chat model ---
-llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")  # or "gemini-2.0-flash"
+    )
 
-# --- Step 4: Compose chain ---
-chain = prompt_template | llm | StrOutputParser()
+    users = fetch_user_summaries(exclude_user_id=req.poster_id)
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found")
 
-# --- Step 5: Example user data ---
-skills = "React, Python, Node.js, JavaScript, TypeScript, MongoDB, PostgreSQL, GraphQL, Data Science, Docker"
-team_size_pref = "4-5"
-exp_level = "Intermediate"
-hackathon_type = "Virtual"
-availability = "Weekdays"
+    results = []
+    for user in users:
+        user_summary = user['summary']
+        user_skills = user['skills']
+        llm_output = chain.invoke({
+            "user_summary": user_summary,
+            "user_skills": user_skills,
+            "hackathon_detail": hackathon_text
+        })
+        score = parse_score(llm_output)
+        results.append({
+            "user_id": user['id'],
+            "email": user['email'],
+            "score": score,
+            "explanation": llm_output
+        })
 
-# --- Step 6: Run the chain ---
-summary = chain.invoke({
-    "resume_text": resume_text,
-    "skills": skills,
-    "team_size_pref": team_size_pref,
-    "exp_level": exp_level,
-    "hackathon_type": hackathon_type,
-    "availability": availability
-})
+    results_sorted = sorted(results, key=lambda x: x['score'], reverse=True)
+    return {"recommendations": results_sorted}
 
-print("Generated Summary:\n", summary)

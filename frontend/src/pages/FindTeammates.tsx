@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Plus, X, Search, MapPin, Calendar, Users, Zap, ArrowRight, MessageSquare } from 'lucide-react';
+import { Plus, X,User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
 
 const FindTeammates: React.FC = () => {
   const { user } = useAuth();
@@ -25,27 +26,31 @@ const FindTeammates: React.FC = () => {
     skillsNeeded: '',
     teamSize: '4'
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // For recommendations
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [postedHackathon, setPostedHackathon] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+  const [showRecs, setShowRecs] = useState(false);
+
   // Fetch all users and their hackathon postings
-
-
-useEffect(() => {
-  const fetchProfiles = async () => {
-    setLoading(true);
-    // Fetch all profiles except the current user
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, avatar_url, bio, skills')
-      .neq('id', user.id); // Exclude current user
-    setProfiles(profilesData || []);
-    setLoading(false);
-  };
-  fetchProfiles();
-}, [user]);
-
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      setLoading(true);
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url, bio, skills')
+        .neq('id', user.id); // Exclude current user
+      setProfiles(profilesData || []);
+      setLoading(false);
+    };
+    if (user) fetchProfiles();
+  }, [user]);
 
   // For teammate search
   const filteredProfiles = profiles.filter(profile =>
@@ -55,18 +60,18 @@ useEffect(() => {
   );
 
   // Posting form handlers
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setSearchFilters(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
   };
 
+  // Submit new hackathon
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitSuccess(false);
     setSubmitError(null);
-
     if (!user) {
       setSubmitError("You must be logged in to submit a hackathon project.");
       setIsSubmitting(false);
@@ -86,7 +91,6 @@ useEffect(() => {
     };
 
     const { error } = await supabase.from('hackathons').insert([insertData]);
-
     if (error) {
       setSubmitError("Failed to submit hackathon: " + error.message);
       setIsSubmitting(false);
@@ -96,153 +100,209 @@ useEffect(() => {
     setSubmitSuccess(true);
     setIsSubmitting(false);
     setShowPostForm(false);
-    // Optionally: refresh profiles to show new posting
+
+    // Fetch the latest hackathon just posted by this user
+    const { data: latestHackathon } = await supabase
+      .from('hackathons')
+      .select('id, user_id')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    setPostedHackathon(latestHackathon);
+    setShowConfirmation(true);
+  };
+
+  // Recommendation API call
+  const handleFindTeammates = async (hackathonId: string, posterId: string) => {
+    setLoadingRecs(true);
+    setShowRecs(true);
+    setRecommendations([]);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/recommend-team-mates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hackathon_id: hackathonId, poster_id: posterId }),
+      });
+      const data = await response.json();
+      setRecommendations(data.recommendations || []);
+    } catch (error) {
+      // Optionally handle error
+    } finally {
+      setLoadingRecs(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-dark-100 to-dark-200 pt-20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Find <span className="gradient-text">Teammates</span>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Browse users, see their skills and hackathon posts, and reach out to collaborate!
-          </p>
-        </div>
+    <div className="p-6">
+      {/* Header */}
+      <h1 className="text-3xl font-bold mb-2">Find Teammates</h1>
+      <p className="mb-6 text-gray-300">Browse users, see their skills and hackathon posts, and reach out to collaborate!</p>
 
-        {/* Search Bar */}
-        <div className="mb-8 flex justify-center">
-          <Input
-            className="w-full max-w-md"
-            placeholder="Search by name, skills, or bio..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Search Bar */}
+      <Input
+        type="text"
+        placeholder="Search teammates by name, skill, or bio"
+        className="mb-6"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
 
-        {/* All Users */}
-        {loading ? (
-          <div className="text-gray-400 text-center py-12">Loading teammates...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredProfiles.map(profile => (
-              <div
-  key={profile.id}
-  className="bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg flex flex-col gap-3"
->
-  <div className="flex items-center gap-4 mb-2">
-    <img
-      src={profile.avatar_url || '/default-avatar.png'}
-      alt={profile.full_name}
-      className="w-12 h-12 rounded-full object-cover border-2 border-electric-blue"
-    />
-    <div>
-      <h3 className="text-lg font-bold text-white">{profile.full_name}</h3>
-      <div className="text-xs text-gray-400">{profile.email}</div>
-    </div>
-  </div>
-  <div className="mb-2 text-gray-300 text-sm">{profile.bio}</div>
-  <div className="flex flex-wrap gap-2 mb-2">
-    {profile.skills?.map((skill: string) => (
-      <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
-    ))}
-  </div>
-  <a
-    href={`mailto:${profile.email}`}
-    className="mt-2 w-full inline-flex items-center justify-center border border-electric-blue text-electric-blue rounded-lg py-2 px-4 hover:bg-electric-blue/10 transition"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    <MessageSquare className="w-4 h-4 mr-2" /> Reach Out
-  </a>
-</div>
-
-            ))}
-          </div>
-        )}
-
-        {/* Floating button to post new hackathon */}
-        <button
-          className="fixed bottom-8 right-8 z-50 bg-electric-blue hover:bg-electric-teal text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all duration-200"
-          onClick={() => setShowPostForm(true)}
-          title="Post New Hackathon"
-        >
-          <Plus className="w-7 h-7" />
-        </button>
-
-        {/* Modal for posting new hackathon */}
-        {showPostForm && (
-          <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-            <div className="bg-dark-200 rounded-2xl p-8 max-w-lg w-full relative">
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-white"
-                onClick={() => setShowPostForm(false)}
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <h2 className="text-2xl font-bold text-white mb-6">Post a Hackathon</h2>
-              {/* Same form as before */}
-              <div className="space-y-4">
-                <Input
-                  name="hackathonName"
-                  value={searchFilters.hackathonName}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Hackathon Name"
-                />
-                <Input
-                  name="date"
-                  type="date"
-                  value={searchFilters.date}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Date"
-                />
-                <Input
-                  name="location"
-                  value={searchFilters.location}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Location"
-                />
-                <Input
-                  name="teamSize"
-                  value={searchFilters.teamSize}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Team Size"
-                />
-                <Textarea
-                  name="projectDescription"
-                  value={searchFilters.projectDescription}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Project Description"
-                />
-                <Textarea
-                  name="skillsNeeded"
-                  value={searchFilters.skillsNeeded}
-                  onChange={handleInputChange}
-                  className="input-dark"
-                  placeholder="Skills Needed (comma separated)"
-                />
-                <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Posting..." : "Post Hackathon"}
-                </Button>
-                {submitSuccess && (
-                  <div className="mt-2 text-green-400 text-center">Hackathon posted!</div>
-                )}
-                {submitError && (
-                  <div className="mt-2 text-red-400 text-center">{submitError}</div>
-                )}
+      {/* All Users */}
+      {loading ? (
+        <div>Loading teammates...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredProfiles.map(profile => (
+            <div key={profile.id} className="bg-dark-200 rounded-lg p-4 shadow">
+              <div className="flex items-center mb-2">
+                <User className="w-5 h-5 mr-2" />
+                <span className="font-semibold">{profile.full_name}</span>
               </div>
+              <div className="text-sm text-gray-400 mb-2">{profile.email}</div>
+              <div className="text-gray-300 mb-2">{profile.bio}</div>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {profile.skills?.map((skill: string) => (
+                  <span key={skill} className="bg-electric-blue text-white rounded-full px-2 py-1 text-xs">{skill}</span>
+                ))}
+              </div>
+              <Button size="sm" variant="secondary">
+                Reach Out
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Floating button to post new hackathon */}
+      <button
+        className="fixed bottom-8 right-8 z-50 bg-electric-blue hover:bg-electric-teal text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg transition-all duration-200"
+        onClick={() => setShowPostForm(true)}
+        title="Post New Hackathon"
+      >
+        <Plus className="w-7 h-7" />
+      </button>
+
+      {/* Modal for posting new hackathon */}
+      {showPostForm && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-dark-200 rounded-2xl p-8 max-w-lg w-full relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowPostForm(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-bold text-white mb-6">Post a Hackathon</h2>
+            <div className="space-y-4">
+              <Input
+                name="hackathonName"
+                value={searchFilters.hackathonName}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Hackathon Name"
+              />
+              <Input
+                name="date"
+                type="date"
+                value={searchFilters.date}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Date"
+              />
+              <Input
+                name="location"
+                value={searchFilters.location}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Location"
+              />
+              <Input
+                name="teamSize"
+                value={searchFilters.teamSize}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Team Size"
+              />
+              <Textarea
+                name="projectDescription"
+                value={searchFilters.projectDescription}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Project Description"
+              />
+              <Textarea
+                name="skillsNeeded"
+                value={searchFilters.skillsNeeded}
+                onChange={handleInputChange}
+                className="input-dark"
+                placeholder="Skills Needed (comma separated)"
+              />
+              <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Posting..." : "Post Hackathon"}
+              </Button>
+              {submitSuccess && (
+                <div className="text-green-400 mt-2">Hackathon posted!</div>
+              )}
+              {submitError && (
+                <div className="text-red-400 mt-2">{submitError}</div>
+              )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
+      {/* Confirmation Modal with Find Team Mates Button */}
+      {showConfirmation && postedHackathon && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-dark-200 rounded-2xl p-8 max-w-lg w-full relative">
+            <h2 className="text-2xl font-bold text-white mb-6">Hackathon Posted!</h2>
+            <p className="mb-4 text-white">Your hackathon has been posted successfully.</p>
+            <Button
+              onClick={() => handleFindTeammates(postedHackathon.id, postedHackathon.user_id)}
+              className="w-full"
+            >
+              Find Team Mates
+            </Button>
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowConfirmation(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Recommendations Modal */}
+      {showRecs && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-dark-200 rounded-2xl p-8 max-w-lg w-full relative">
+            <h2 className="text-xl font-bold text-white mb-4">Recommended Teammates</h2>
+            {loadingRecs ? (
+              <div>Loading...</div>
+            ) : recommendations.length > 0 ? (
+              recommendations.map((rec) => (
+                <div key={rec.user_id} className="mb-4 border-b border-gray-700 pb-2">
+                  <div className="font-semibold text-white">
+                    {rec.email} <span className="text-blue-400">(Score: {rec.score}%)</span>
+                  </div>
+                  <div className="text-gray-300 text-sm">{rec.explanation}</div>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-400">No recommendations found.</div>
+            )}
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowRecs(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

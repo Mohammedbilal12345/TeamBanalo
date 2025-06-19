@@ -20,6 +20,8 @@ import FindTeammates from "@/pages/FindTeammates";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 import CreateProject from "@/pages/CreateProject"; // Import the new CreateProject component
+import PostHackathon from "./pages/PostHackathon"; // Import PostHackathon component
+import ExploreAndTeammates from "@/pages/ExploreAndTeamates"; // Import ExploreAndTeammates component
 
 const queryClient = new QueryClient();
 
@@ -123,10 +125,26 @@ const AppContent = () => {
             }
           />
           <Route
+            path="/post-hackathon"
+            element={
+              <ProtectedRoute>
+                <PostHackathon />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/find-teammates"
             element={
               <ProtectedRoute>
                 <FindTeammates />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/explore-and-teammates"
+            element={
+              <ProtectedRoute>
+                <ExploreAndTeammates />
               </ProtectedRoute>
             }
           />
@@ -140,7 +158,7 @@ const AppContent = () => {
             }
           />
           <Route
-            path="/create-project" // New route for CreateProject
+            path="/post-project" // New route for CreateProject
             element={
               <ProtectedRoute>
                 <CreateProject />

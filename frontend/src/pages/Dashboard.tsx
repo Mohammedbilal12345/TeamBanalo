@@ -1,10 +1,11 @@
-import React from 'react';
+import React , {useState,useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { 
   User, 
   Search, 
@@ -15,10 +16,12 @@ import {
   ArrowRight,
   Zap,
   Target,
-  Trash
+  Trash,
+  X
 } from 'lucide-react';
-
 const Dashboard: React.FC = () => {
+  const [showNewPostModal, setShowNewPostModal] = useState(false);
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
 
   // Calculate profile completion percentage based on profile data
@@ -59,12 +62,13 @@ const Dashboard: React.FC = () => {
       color: 'from-electric-purple to-electric-pink'
     },
     {
-      title: 'Post Project Idea',
-      description: 'Share your hackathon idea and attract teammates',
-      icon: Plus,
-      link: '/create-project',
-      color: 'from-electric-teal to-neon-green'
-    }
+    title: 'New Post',
+    description: 'Share a project or hackathon and attract teammates',
+    icon: Plus,
+    // No link, will trigger modal
+    color: 'from-electric-teal to-neon-green',
+    action: () => setShowNewPostModal(true)
+  }
   ];
 
 
@@ -215,38 +219,110 @@ const handleDeleteProject = async (id: string) => {
 
         {/* Enhanced Quick Actions */}
         <div className="mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-6 sm:mb-8">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {quickActions.map((action, index) => (
-              <Link key={index} to={action.link} className="group">
-                <div className={`
-                  bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-                  p-6 sm:p-8 rounded-2xl transition-all duration-300 
-                  hover:bg-dark-300/60 hover:border-gray-600/50 
-                  hover:shadow-2xl hover:scale-105 
-                  focus-within:ring-2 focus-within:ring-electric-blue/50 
-                  focus-within:ring-offset-2 focus-within:ring-offset-dark-200
-                  ${action.urgent ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-400/10' : ''}
-                `}>
-                  <div className={`w-14 h-14 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
-                    <action.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-white transition-colors">
-                    {action.title}
-                    {action.urgent && <span className="ml-2 text-yellow-400 animate-pulse">⚡</span>}
-                  </h3>
-                  <p className="text-gray-400 mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
-                    {action.description}
-                  </p>
-                  <div className="flex items-center text-electric-blue font-semibold group-hover:text-electric-teal transition-colors">
-                    Get Started
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-                  </div>
-                </div>
-              </Link>
-            ))}
+  <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-6 sm:mb-8">Quick Actions</h2>
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {quickActions.map((action, index) =>
+      action.action ? (
+        <button
+          key={index}
+          type="button"
+          onClick={action.action}
+          className="group w-full text-left"
+        >
+          <div className={`
+            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
+            p-6 sm:p-8 rounded-2xl transition-all duration-300 
+            hover:bg-dark-300/60 hover:border-gray-600/50 
+            hover:shadow-2xl hover:scale-105 
+            focus-within:ring-2 focus-within:ring-electric-blue/50 
+            focus-within:ring-offset-2 focus-within:ring-offset-dark-200
+            ${action.urgent ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-400/10' : ''}
+          `}>
+            <div className={`w-14 h-14 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+              <action.icon className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-white transition-colors">
+              {action.title}
+              {action.urgent && <span className="ml-2 text-yellow-400 animate-pulse">⚡</span>}
+            </h3>
+            <p className="text-gray-400 mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+              {action.description}
+            </p>
+            <div className="flex items-center text-electric-blue font-semibold group-hover:text-electric-teal transition-colors">
+              Get Started
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+            </div>
           </div>
-        </div>
+        </button>
+      ) : (
+        <Link key={index} to={action.link} className="group">
+          <div className={`
+            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
+            p-6 sm:p-8 rounded-2xl transition-all duration-300 
+            hover:bg-dark-300/60 hover:border-gray-600/50 
+            hover:shadow-2xl hover:scale-105 
+            focus-within:ring-2 focus-within:ring-electric-blue/50 
+            focus-within:ring-offset-2 focus-within:ring-offset-dark-200
+            ${action.urgent ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-400/10' : ''}
+          `}>
+            <div className={`w-14 h-14 bg-gradient-to-r ${action.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg group-hover:shadow-xl transition-shadow duration-300`}>
+              <action.icon className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-100 mb-3 group-hover:text-white transition-colors">
+              {action.title}
+              {action.urgent && <span className="ml-2 text-yellow-400 animate-pulse">⚡</span>}
+            </h3>
+            <p className="text-gray-400 mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
+              {action.description}
+            </p>
+            <div className="flex items-center text-electric-blue font-semibold group-hover:text-electric-teal transition-colors">
+              Get Started
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+            </div>
+          </div>
+        </Link>
+      )
+    )}
+  </div>
+</div>
+
+{/* Popup */}
+
+{showNewPostModal && (
+  <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+    <div className="bg-dark-200 rounded-2xl p-8 max-w-xs w-full relative">
+      <button
+        className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        onClick={() => setShowNewPostModal(false)}
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <h2 className="text-xl font-bold text-white mb-6 text-center">What would you like to post?</h2>
+      <div className="flex flex-col gap-4">
+        <Button
+          className="w-full"
+          onClick={() => {
+            setShowNewPostModal(false);
+            navigate("/post-project");
+          }}
+        >
+          Project
+        </Button>
+        <Button
+          className="w-full"
+          onClick={() => {
+            setShowNewPostModal(false);
+            navigate("/post-hackathon");
+          }}
+        >
+          Hackathon
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
+        
 
         {/* My Posts Section */}
 <div className="mb-12">
