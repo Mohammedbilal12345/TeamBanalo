@@ -1,21 +1,211 @@
+// import React, { useEffect, useState } from "react";
+// import { Button } from "@/components/ui/button";
+// import { supabase } from "@/integrations/supabase/client";
+// import { useAuth } from "@/contexts/AuthContext";
+// import { Link } from "react-router-dom";
+
+// const BASE_URL = "http://127.0.0.1:8000";
+
+// const ExploreAndTeammates: React.FC = () => {
+//   const { user } = useAuth();
+//   const [hackathons, setHackathons] = useState<any[]>([]);
+//   const [projects, setProjects] = useState<any[]>([]);
+//   const [loading, setLoading] = useState(true);
+
+//   const [showRecs, setShowRecs] = useState(false);
+//   const [recommendations, setRecommendations] = useState<any[]>([]);
+//   const [loadingRecs, setLoadingRecs] = useState(false);
+//   const [recHackathon, setRecHackathon] = useState<any>(null);
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       setLoading(true);
+//       const { data: hackathonsData } = await supabase
+//         .from("hackathons")
+//         .select("*")
+//         .order("created_at", { ascending: false });
+//       setHackathons(hackathonsData || []);
+
+//       const { data: projectsData } = await supabase
+//         .from("projects")
+//         .select("*")
+//         .order("created_at", { ascending: false });
+//       setProjects(projectsData || []);
+//       setLoading(false);
+//     };
+//     fetchData();
+//   }, []);
+
+//   const handleFindTeammates = async (hackathon: any) => {
+//     setLoadingRecs(true);
+//     setShowRecs(true);
+//     setRecHackathon(hackathon);
+//     setRecommendations([]);
+//     try {
+//       const response = await fetch(`${BASE_URL}/recommend-team-mates`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ hackathon_id: hackathon.id, poster_id: hackathon.user_id }),
+//       });
+//       if (!response.ok) throw new Error("Failed to fetch recommendations.");
+//       const data = await response.json();
+//       setRecommendations(data.recommendations || []);
+//     } catch (error) {
+//       console.error("Error fetching teammates:", error);
+//       alert("Failed to fetch recommendations. Please try again.");
+//     } finally {
+//       setLoadingRecs(false);
+//     }
+//   };
+
+//   const myHackathons = user ? hackathons.filter(h => h.user_id === user.id) : [];
+//   const exploreHackathons = user ? hackathons.filter(h => h.user_id !== user.id) : hackathons;
+
+//   return (
+//     <div className="max-w-7xl mx-auto px-4 py-10 pt-20">
+//       <h1 className="text-3xl font-bold mb-2">Explore What's New</h1>
+//       <p className="mb-8 text-gray-300">Find hackathons and projects to join, or just see what others are working on.</p>
+
+//       {user && (
+//         <>
+//           <h2 className="text-2xl font-bold mb-4">My Hackathons</h2>
+//           {loading ? (
+//             <div className="mb-8 text-gray-400">Loading...</div>
+//           ) : myHackathons.length === 0 ? (
+//             <div className="mb-8 text-gray-400">You haven't posted any hackathons yet.</div>
+//           ) : (
+//             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+//               {myHackathons.map((h) => (
+//                 <HackathonCard key={h.id} hackathon={h} onFindTeam={() => handleFindTeammates(h)} />
+//               ))}
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       <h2 className="text-2xl font-bold mb-4">Explore Hackathons</h2>
+//       {loading ? (
+//         <div className="mb-8 text-gray-400">Loading...</div>
+//       ) : exploreHackathons.length === 0 ? (
+//         <div className="mb-8 text-gray-400">No hackathons to explore right now.</div>
+//       ) : (
+//         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+//           {exploreHackathons.map((h) => (
+//             <HackathonCard key={h.id} hackathon={h} onFindTeam={() => handleFindTeammates(h)} />
+//           ))}
+//         </div>
+//       )}
+
+//       <h2 className="text-2xl font-bold mb-4">Explore Projects</h2>
+//       {loading ? (
+//         <div className="text-gray-400">Loading...</div>
+//       ) : projects.length === 0 ? (
+//         <div className="text-gray-400">No projects to explore right now.</div>
+//       ) : (
+//         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+//           {projects.map((p) => (
+//             <div key={p.id} className="bg-dark-300/40 p-6 rounded-2xl hover:scale-105 transition-all flex flex-col relative z-10">
+//               <div className="mb-6">
+//                 <h3 className="text-xl font-bold text-gray-100 mb-1">{p.project_name}</h3>
+//                 <div className="text-gray-400 text-sm">{new Date(p.created_at).toLocaleDateString()}</div>
+//               </div>
+//               <p className="text-gray-400 mb-4">{p.project_description}</p>
+//               <div className="flex flex-wrap gap-2 mb-4">
+//                 {p.required_skills?.map((skill: string) => (
+//                   <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+//                 ))}
+//               </div>
+//               <div className="flex items-center gap-2 mt-auto z-10 relative">
+//                 <Link to={`/project/${p.id}`} className="text-electric-blue font-semibold hover:underline">View Details</Link>
+//                 <Button variant="secondary" onClick={() => alert("Find Teams feature coming soon!")}>Find Teams</Button>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//       )}
+
+//       {showRecs && (
+//         <RecommendationModal
+//           hackathon={recHackathon}
+//           recommendations={recommendations}
+//           loading={loadingRecs}
+//           onClose={() => setShowRecs(false)}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
+// const HackathonCard = ({ hackathon, onFindTeam }: any) => (
+//   <div className="bg-dark-300/40 p-6 rounded-2xl hover:scale-105 transition-all flex flex-col relative z-10">
+//     <div className="mb-6">
+//       <h3 className="text-xl font-bold text-gray-100 mb-1">{hackathon.hackathon_name}</h3>
+//       <div className="text-gray-400 text-sm">{hackathon.location} • {hackathon.date}</div>
+//     </div>
+//     <p className="text-gray-400 mb-4">{hackathon.project_description}</p>
+//     <div className="flex flex-wrap gap-2 mb-4">
+//       {hackathon.skills_needed?.map((skill: string) => (
+//         <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+//       ))}
+//     </div>
+//     <div className="flex items-center gap-2 mt-auto z-10 relative">
+//       <Button variant="secondary" onClick={onFindTeam}>Find Team Mates</Button>
+//       <Link to={`/hackathon/${hackathon.id}`} className="text-electric-blue font-semibold hover:underline">View Details</Link>
+//     </div>
+//   </div>
+// );
+
+// const RecommendationModal = ({ hackathon, recommendations, loading, onClose }: any) => (
+//   <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center px-4">
+//     <div className="bg-zinc-900 w-full max-w-2xl p-6 rounded-xl relative shadow-lg">
+//       <button onClick={onClose} className="absolute top-3 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+//       <h2 className="text-xl font-bold mb-4 text-electric-blue">
+//         Recommended Teammates for "{hackathon?.hackathon_name}"
+//       </h2>
+//       {loading ? (
+//         <p className="text-gray-400">Finding best teammates...</p>
+//       ) : recommendations.length === 0 ? (
+//         <p className="text-gray-400">No recommendations found.</p>
+//       ) : (
+//         <ul className="space-y-4 max-h-80 overflow-y-auto pr-2">
+//           {recommendations.map((rec) => (
+//             <li key={rec.user_id} className="bg-zinc-800 p-4 rounded-lg border border-zinc-700">
+//               <div className="font-semibold text-white">{rec.email}</div>
+//               <div className="text-sm text-blue-400">Score: {rec.score}% match</div>
+//               <div className="text-sm text-gray-400 italic mt-1">{rec.explanation}</div>
+//             </li>
+//           ))}
+//         </ul>
+//       )}
+//     </div>
+//   </div>
+// );
+
+// export default ExploreAndTeammates;
+
+
+
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowRight, X } from "lucide-react";
+import { Link } from "react-router-dom";
+
+// ✅ RECOMMENDED: Store in .env (use VITE_ prefix if using Vite)
+const BASE_URL = "http://127.0.0.1:8000";
 
 const ExploreAndTeammates: React.FC = () => {
   const { user } = useAuth();
-
   const [hackathons, setHackathons] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // For recommendations
   const [showRecs, setShowRecs] = useState(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
-  const [recHackathon, setRecHackathon] = useState<any>(null);
+  const [recContext, setRecContext] = useState<any>(null); // can be hackathon or project
+  const [recType, setRecType] = useState<"hackathon" | "project" | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,6 +215,7 @@ const ExploreAndTeammates: React.FC = () => {
         .select("*")
         .order("created_at", { ascending: false });
       setHackathons(hackathonsData || []);
+
       const { data: projectsData } = await supabase
         .from("projects")
         .select("*")
@@ -35,81 +226,97 @@ const ExploreAndTeammates: React.FC = () => {
     fetchData();
   }, []);
 
-  // Find Team Mates handler
-  const handleFindTeammates = async (hackathon: any) => {
+  const handleFindTeammates = async (
+    context: any,
+    type: "hackathon" | "project"
+  ) => {
     setLoadingRecs(true);
     setShowRecs(true);
-    setRecHackathon(hackathon);
+    setRecContext(context);
+    setRecType(type);
     setRecommendations([]);
     try {
-      const response = await fetch("http://127.0.0.1:8000/recommend-team-mates", {
+      const response = await fetch(`${BASE_URL}/recommend-team-mates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hackathon_id: hackathon.id, poster_id: hackathon.user_id }),
+        body: JSON.stringify({
+          hackathon_id: context.id,
+          poster_id: context.user_id,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch recommendations.");
+      }
+
       const data = await response.json();
       setRecommendations(data.recommendations || []);
     } catch (error) {
-      // Optionally handle error
+      console.error("Error fetching teammates:", error);
+      alert("Failed to fetch recommendations. Please try again.");
     } finally {
       setLoadingRecs(false);
     }
   };
 
-  // Separate user's and others' hackathons
-  const myHackathons = user ? hackathons.filter(h => h.user_id === user.id) : [];
-  const exploreHackathons = user ? hackathons.filter(h => h.user_id !== user.id) : hackathons;
+  const myHackathons = user ? hackathons.filter((h) => h.user_id === user.id) : [];
+  const exploreHackathons = user
+    ? hackathons.filter((h) => h.user_id !== user.id)
+    : hackathons;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 pt-20">
-      {/* Header */}
       <h1 className="text-3xl font-bold mb-2">Explore What's New</h1>
       <p className="mb-8 text-gray-300">
         Find hackathons and projects to join, or just see what others are working on.
       </p>
 
-      {/* My Hackathons */}
+      {/* ========== My Hackathons ========== */}
       {user && (
         <>
           <h2 className="text-2xl font-bold mb-4">My Hackathons</h2>
           {loading ? (
             <div className="mb-8 text-gray-400">Loading...</div>
           ) : myHackathons.length === 0 ? (
-            <div className="mb-8 text-gray-400">You haven't posted any hackathons yet.</div>
+            <div className="mb-8 text-gray-400">
+              You haven't posted any hackathons yet.
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
               {myHackathons.map((h) => (
                 <div
                   key={h.id}
-                  className={`
-                    bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-                    p-6 sm:p-8 rounded-2xl transition-all duration-300 
-                    hover:bg-dark-300/60 hover:border-gray-600/50 
-                    hover:shadow-2xl hover:scale-105 
-                    focus-within:ring-2 focus-within:ring-electric-blue/50 
-                    focus-within:ring-offset-2 focus-within:ring-offset-dark-200
-                    cursor-pointer flex flex-col
-                  `}
+                  className="bg-dark-300/40 p-6 rounded-2xl hover:scale-105 transition-all flex flex-col"
                 >
                   <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-100 mb-1">{h.hackathon_name}</h3>
-                    <div className="text-gray-400 text-sm">{h.location} • {h.date}</div>
+                    <h3 className="text-xl font-bold text-gray-100 mb-1">
+                      {h.hackathon_name}
+                    </h3>
+                    <div className="text-gray-400 text-sm">
+                      {h.location} • {h.date}
+                    </div>
                   </div>
-                  <p className="text-gray-400 mb-4 leading-relaxed">
-                    {h.project_description}
-                  </p>
+                  <p className="text-gray-400 mb-4">{h.project_description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {h.skills_needed?.map((skill: string) => (
-                      <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+                      <span
+                        key={skill}
+                        className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs"
+                      >
+                        {skill}
+                      </span>
                     ))}
                   </div>
                   <div className="flex items-center gap-2 mt-auto">
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleFindTeammates(h)}
-                    >
+                    <Button variant="secondary" onClick={() => handleFindTeammates(h, "hackathon")}>
                       Find Team Mates
                     </Button>
+                    <Link
+                      to={`/hackathon/${h.id}`}
+                      className="text-electric-blue font-semibold hover:underline"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -118,7 +325,7 @@ const ExploreAndTeammates: React.FC = () => {
         </>
       )}
 
-      {/* Explore Hackathons */}
+      {/* ========== Explore Hackathons ========== */}
       <h2 className="text-2xl font-bold mb-4">Explore Hackathons</h2>
       {loading ? (
         <div className="mb-8 text-gray-400">Loading...</div>
@@ -129,46 +336,44 @@ const ExploreAndTeammates: React.FC = () => {
           {exploreHackathons.map((h) => (
             <div
               key={h.id}
-              className={`
-                bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-                p-6 sm:p-8 rounded-2xl transition-all duration-300 
-                hover:bg-dark-300/60 hover:border-gray-600/50 
-                hover:shadow-2xl hover:scale-105 
-                focus-within:ring-2 focus-within:ring-electric-blue/50 
-                focus-within:ring-offset-2 focus-within:ring-offset-dark-200
-                cursor-pointer flex flex-col
-              `}
+              className="bg-dark-300/40 p-6 rounded-2xl hover:scale-105 transition-all flex flex-col"
             >
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-100 mb-1">{h.hackathon_name}</h3>
-                <div className="text-gray-400 text-sm">{h.location} • {h.date}</div>
+                <h3 className="text-xl font-bold text-gray-100 mb-1">
+                  {h.hackathon_name}
+                </h3>
+                <div className="text-gray-400 text-sm">
+                  {h.location} • {h.date}
+                </div>
               </div>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                {h.project_description}
-              </p>
+              <p className="text-gray-400 mb-4">{h.project_description}</p>
               <div className="flex flex-wrap gap-2 mb-4">
                 {h.skills_needed?.map((skill: string) => (
-                  <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+                  <span
+                    key={skill}
+                    className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs"
+                  >
+                    {skill}
+                  </span>
                 ))}
               </div>
-              <div className="flex items-center text-electric-blue font-semibold cursor-pointer">
-                View Details
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </div>
-              <div className="flex items-center gap-2 mt-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => handleFindTeammates(h)}
-                >
+              <div className="flex items-center gap-2 mt-auto">
+                <Button variant="secondary" onClick={() => handleFindTeammates(h, "hackathon")}>
                   Find Team Mates
                 </Button>
+                <Link
+                  to={`/hackathon/${h.id}`}
+                  className="text-electric-blue font-semibold hover:underline"
+                >
+                  View Details
+                </Link>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Explore Projects */}
+      {/* ========== Explore Projects ========== */}
       <h2 className="text-2xl font-bold mb-4">Explore Projects</h2>
       {loading ? (
         <div className="text-gray-400">Loading...</div>
@@ -179,109 +384,77 @@ const ExploreAndTeammates: React.FC = () => {
           {projects.map((p) => (
             <div
               key={p.id}
-              className={`
-                bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-                p-6 sm:p-8 rounded-2xl transition-all duration-300 
-                hover:bg-dark-300/60 hover:border-gray-600/50 
-                hover:shadow-2xl hover:scale-105 
-                focus-within:ring-2 focus-within:ring-electric-blue/50 
-                focus-within:ring-offset-2 focus-within:ring-offset-dark-200
-                cursor-pointer flex flex-col
-              `}
+              className="bg-dark-300/40 p-6 rounded-2xl hover:scale-105 transition-all flex flex-col"
             >
               <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-100 mb-1">{p.project_name}</h3>
-                <div className="text-gray-400 text-sm">{new Date(p.created_at).toLocaleDateString()}</div>
+                <h3 className="text-xl font-bold text-gray-100 mb-1">
+                  {p.project_name}
+                </h3>
+                <div className="text-gray-400 text-sm">
+                  {new Date(p.created_at).toLocaleDateString()}
+                </div>
               </div>
-              <p className="text-gray-400 mb-4 leading-relaxed">
-                {p.project_description}
-              </p>
+              <p className="text-gray-400 mb-4">{p.project_description}</p>
               <div className="flex flex-wrap gap-2 mb-4">
                 {p.required_skills?.map((skill: string) => (
-                  <span key={skill} className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs">{skill}</span>
+                  <span
+                    key={skill}
+                    className="bg-blue-900 text-blue-200 px-2 py-0.5 rounded text-xs"
+                  >
+                    {skill}
+                  </span>
                 ))}
               </div>
-              <div className="flex items-center text-electric-blue font-semibold cursor-pointer">
-                View Details
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Recommendations Modal */}
-     {showRecs && (
-  <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
-    <div className="bg-dark-200 rounded-2xl p-8 max-w-4xl w-full relative max-h-[90vh] overflow-y-auto">
-      <button
-        className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        onClick={() => setShowRecs(false)}
-      >
-        <X className="w-5 h-5" />
-      </button>
-      <h2 className="text-xl font-bold text-white mb-4">
-        Recommended Teammates
-        {recHackathon && (
-          <span className="text-base text-gray-400 ml-2">
-            for <span className="font-semibold">{recHackathon.hackathon_name}</span>
-          </span>
-        )}
-      </h2>
-      
-      {loadingRecs ? (
-        <div className="grid place-items-center h-48">
-          <div className="text-gray-400">Loading recommendations...</div>
-        </div>
-      ) : recommendations.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {recommendations.map((rec) => (
-            <div 
-              key={rec.user_id}
-              className="bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 p-6 rounded-2xl shadow-lg flex flex-col gap-3"
-            >
-              <div className="flex items-center gap-4 mb-2">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-electric-blue to-electric-teal flex items-center justify-center text-white font-bold">
-                    {rec.email.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                    {rec.score}%
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">{rec.email}</h3>
-                  <div className="text-xs text-gray-400">Match Score: {rec.score}%</div>
-                </div>
-              </div>
-              
-              <div className="text-gray-300 text-sm mb-2">
-                {rec.explanation}
-              </div>
-              
-              <div className="mt-auto pt-2 border-t border-gray-700/50">
-                <a
-                  href={`mailto:${rec.email}`}
-                  className="w-full inline-flex items-center justify-center border border-electric-blue text-electric-blue rounded-lg py-2 px-4 hover:bg-electric-blue/10 transition"
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="flex items-center gap-2 mt-auto">
+                <Link
+                  to={`/project/${p.id}`}
+                  className="text-electric-blue font-semibold hover:underline"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Contact
-                </a>
+                  View Details
+                </Link>
+                <Button variant="secondary" onClick={() => handleFindTeammates(p, "project")}>
+                  Find Team Mates
+                </Button>
               </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-gray-400 text-center py-8">No recommendations found</div>
       )}
-    </div>
-  </div>
-)}
 
+      {/* ========== Recommendations Modal ========== */}
+      {showRecs && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-dark-200 p-6 rounded-xl max-w-lg w-full relative">
+            <button
+              className="absolute top-2 right-3 text-gray-400 hover:text-white"
+              onClick={() => setShowRecs(false)}
+            >
+              ✖
+            </button>
+            <h2 className="text-xl font-bold text-white mb-4">
+              {recType === "hackathon" ? "Hackathon" : "Project"} Recommendations:{" "}
+              <span className="text-electric-blue">
+                {recContext?.hackathon_name || recContext?.project_name}
+              </span>
+            </h2>
+            {loadingRecs ? (
+              <p className="text-gray-400">Finding best teammates...</p>
+            ) : recommendations.length === 0 ? (
+              <p className="text-gray-400">No recommendations found.</p>
+            ) : (
+              <ul className="space-y-3 max-h-[300px] overflow-y-auto">
+                {recommendations.map((rec) => (
+                  <li key={rec.user_id} className="bg-dark-300/30 p-4 rounded-lg">
+                    <p className="text-white font-medium">Email: {rec.email}</p>
+                    <p className="text-gray-400">Score: {rec.score}</p>
+                    <p className="text-sm italic text-gray-500 mt-1">{rec.explanation}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

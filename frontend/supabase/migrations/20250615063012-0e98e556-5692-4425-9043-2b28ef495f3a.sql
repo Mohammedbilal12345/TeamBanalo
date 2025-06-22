@@ -95,3 +95,18 @@ CREATE POLICY "Users can update their own resume"
 CREATE POLICY "Users can delete their own resume" 
   ON storage.objects FOR DELETE 
   USING (bucket_id = 'resumes' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+
+-- Function to delete user from auth.users (called from frontend)
+create or replace function delete_user(uid uuid)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  delete from auth.users where id = uid;
+end;
+$$;
+
+-- Grant access to authenticated users
+grant execute on function delete_user to authenticated;
