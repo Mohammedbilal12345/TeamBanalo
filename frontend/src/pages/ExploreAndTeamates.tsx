@@ -443,7 +443,9 @@ const ExploreAndTeammates: React.FC = () => {
               <p className="text-gray-400">No recommendations found.</p>
             ) : (
               <ul className="space-y-3 max-h-[300px] overflow-y-auto">
-                {recommendations.map((rec) => (
+                {recommendations
+                .filter((rec) => rec.score >= 20)
+                .map((rec) => (
                   <li key={rec.user_id} className="bg-dark-300/30 p-4 rounded-lg">
                     <p className="text-white font-medium">Email: {rec.email}</p>
                     <p className="text-gray-400">Score: {rec.score}</p>
