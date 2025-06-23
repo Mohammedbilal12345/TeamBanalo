@@ -1,4 +1,4 @@
-import React , {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,12 +6,12 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
-import { 
-  User, 
-  Search, 
-  Plus, 
-  Award, 
-  Users, 
+import {
+  User,
+  Search,
+  Plus,
+  Award,
+  Users,
   Calendar,
   ArrowRight,
   Zap,
@@ -27,23 +27,23 @@ const Dashboard: React.FC = () => {
   // Calculate profile completion percentage based on profile data
   const calculateProfileCompletion = () => {
     if (!profile) return 25;
-    
+
     let completion = 0;
     if (profile.full_name) completion += 20;
     if (profile.email) completion += 20;
     if (profile.avatar_url) completion += 20;
     if (profile.resume_url) completion += 20;
-    
+
     // Assume additional fields would add more completion
     completion += 20; // Base completion for having a profile
-    
+
     return Math.min(completion, 100);
   };
 
   const profileCompletion = calculateProfileCompletion();
   const isProfileIncomplete = profileCompletion < 80;
 
-  
+
 
   const quickActions = [
     {
@@ -71,55 +71,12 @@ const Dashboard: React.FC = () => {
   }
   ];
 
-
-  const recentActivity = [
-    {
-      type: 'match',
-      message: 'New teammate match found: Sarah Chen',
-      time: '2 hours ago',
-      icon: Users
-    },
-    {
-      type: 'invitation',
-      message: 'Team invitation from DevHack 2025',
-      time: '1 day ago',
-      icon: Calendar
-    },
-    {
-      type: 'achievement',
-      message: 'Profile completion: 85%',
-      time: '2 days ago',
-      icon: Award
-    }
-  ];
-
-  const upcomingHackathons = [
-    {
-      name: 'TechCrunch Disrupt',
-      date: 'Jan 15-17, 2025',
-      location: 'San Francisco, CA',
-      participants: 1200
-    },
-    {
-      name: 'MLH Spring Kickoff',
-      date: 'Jan 22-24, 2025',
-      location: 'Virtual',
-      participants: 800
-    },
-    {
-      name: 'University Hackathon',
-      date: 'Feb 5-7, 2025',
-      location: 'Boston, MA',
-      participants: 400
-    }
-  ];
-
-   // --- NEW: Fetch and display user's own posts ---
+    // --- NEW: Fetch and display user's own posts ---
   const [myHackathons, setMyHackathons] = useState<any[]>([]);
   const [myProjects, setMyProjects] = useState<any[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
 
-   useEffect(() => {
+    useEffect(() => {
     if (!user) return;
     setLoadingPosts(true);
     // Fetch user's hackathons
@@ -164,7 +121,7 @@ const handleDeleteProject = async (id: string) => {
                 Ready to find your next hackathon teammates?
               </p>
             </div>
-            
+
             {!isProfileIncomplete && (
               <div className="mt-4 lg:mt-0">
                 <div className="flex items-center space-x-4 bg-dark-300/50 backdrop-blur-sm border border-gray-700/50 px-6 py-4 rounded-xl shadow-lg">
@@ -202,7 +159,7 @@ const handleDeleteProject = async (id: string) => {
                     </div>
                   </div>
                   <p className="text-gray-300 mb-6 leading-relaxed">
-                    Add your skills, experience, and preferences to get better teammate matches 
+                    Add your skills, experience, and preferences to get better teammate matches
                     and increase your chances of joining winning teams.
                   </p>
                   <Link to="/profile">
@@ -230,11 +187,11 @@ const handleDeleteProject = async (id: string) => {
           className="group w-full text-left"
         >
           <div className={`
-            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-            p-6 sm:p-8 rounded-2xl transition-all duration-300 
-            hover:bg-dark-300/60 hover:border-gray-600/50 
-            hover:shadow-2xl hover:scale-105 
-            focus-within:ring-2 focus-within:ring-electric-blue/50 
+            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50
+            p-6 sm:p-8 rounded-2xl transition-all duration-300
+            hover:bg-dark-300/60 hover:border-gray-600/50
+            hover:shadow-2xl hover:scale-105
+            focus-within:ring-2 focus-within:ring-electric-blue/50
             focus-within:ring-offset-2 focus-within:ring-offset-dark-200
             ${action.urgent ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-400/10' : ''}
           `}>
@@ -257,11 +214,11 @@ const handleDeleteProject = async (id: string) => {
       ) : (
         <Link key={index} to={action.link} className="group">
           <div className={`
-            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 
-            p-6 sm:p-8 rounded-2xl transition-all duration-300 
-            hover:bg-dark-300/60 hover:border-gray-600/50 
-            hover:shadow-2xl hover:scale-105 
-            focus-within:ring-2 focus-within:ring-electric-blue/50 
+            bg-dark-300/40 backdrop-blur-sm border border-gray-700/50
+            p-6 sm:p-8 rounded-2xl transition-all duration-300
+            hover:bg-dark-300/60 hover:border-gray-600/50
+            hover:shadow-2xl hover:scale-105
+            focus-within:ring-2 focus-within:ring-electric-blue/50
             focus-within:ring-offset-2 focus-within:ring-offset-dark-200
             ${action.urgent ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-400/10' : ''}
           `}>
@@ -322,7 +279,6 @@ const handleDeleteProject = async (id: string) => {
   </div>
 )}
 
-        
 
         {/* My Posts Section */}
 <div className="mb-12">
@@ -377,7 +333,7 @@ const handleDeleteProject = async (id: string) => {
     </div>
   </div>
 ))}
-     
+
       {/* If no posts */}
       {myHackathons.length === 0 && myProjects.length === 0 && (
         <div className="text-gray-400 col-span-full text-center py-8">
@@ -388,80 +344,6 @@ const handleDeleteProject = async (id: string) => {
   )}
 </div>
 
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Enhanced Recent Activity */}
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-6 sm:mb-8">Recent Activity</h2>
-            <div className="bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-xl hover:bg-dark-300/50 transition-colors duration-300">
-              <div className="space-y-6">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-4 p-4 hover:bg-gray-800/30 rounded-xl transition-all duration-200 group">
-                    <div className="w-12 h-12 bg-gradient-to-br from-electric-blue to-electric-purple rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-                      <activity.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-gray-200 font-medium group-hover:text-white transition-colors">{activity.message}</p>
-                      <p className="text-gray-500 text-sm mt-1">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 pt-6 border-t border-gray-700/50">
-                <Link to="/activity">
-                  <Button variant="ghost" className="w-full bg-gray-800/30 hover:bg-gray-700/50 text-gray-200 hover:text-white border border-gray-700/50 hover:border-gray-600/50 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-electric-blue/50">
-                    View All Activity
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Upcoming Hackathons */}
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-6 sm:mb-8">Upcoming Hackathons</h2>
-            <div className="bg-dark-300/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 sm:p-8 shadow-xl hover:bg-dark-300/50 transition-colors duration-300">
-              <div className="space-y-6">
-                {upcomingHackathons.map((hackathon, index) => (
-                  <div key={index} className="p-4 sm:p-5 border border-gray-700/50 rounded-xl hover:border-electric-blue/40 hover:bg-gray-800/20 transition-all duration-200 group">
-                    <h3 className="text-gray-100 font-bold mb-3 group-hover:text-white transition-colors text-lg">{hackathon.name}</h3>
-                    <div className="space-y-2 text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                      <p className="flex items-center">
-                        <span className="mr-2">📅</span>
-                        {hackathon.date}
-                      </p>
-                      <p className="flex items-center">
-                        <span className="mr-2">📍</span>
-                        {hackathon.location}
-                      </p>
-                      <p className="flex items-center">
-                        <span className="mr-2">👥</span>
-                        {hackathon.participants.toLocaleString()} participants
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8 pt-6 border-t border-gray-700/50">
-                {/* "Browse All Hackathons" - now redirects to Devfolio */}
-                <a 
-                  href="https://devfolio.co/hackathons" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="w-full block" 
-                >
-                  <Button variant="ghost" className="w-full bg-gray-800/30 hover:bg-gray-700/50 text-gray-200 hover:text-white border border-gray-700/50 hover:border-gray-600/50 py-3 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-electric-blue/50">
-                    Browse All Hackathons
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Enhanced AI Recommendations */}
         <div className="mt-8 sm:mt-12">
@@ -485,7 +367,7 @@ const handleDeleteProject = async (id: string) => {
                   Recommended Teammates
                 </h3>
                 <p className="text-gray-400 mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
-                  Based on your React and Node.js skills, we found 12 potential teammates 
+                  Based on your React and Node.js skills, we found 12 potential teammates
                   for upcoming hackathons.
                 </p>
                 <Link to="/find-teammates">
@@ -500,7 +382,7 @@ const handleDeleteProject = async (id: string) => {
                   Suggested Hackathons
                 </h3>
                 <p className="text-gray-400 mb-6 leading-relaxed group-hover:text-gray-300 transition-colors">
-                  3 hackathons matching your interests in web development and AI 
+                  3 hackathons matching your interests in web development and AI
                   are happening near you.
                 </p>
                 {/* "Explore Events" - now redirects to Devfolio */}
@@ -508,7 +390,7 @@ const handleDeleteProject = async (id: string) => {
                   href="https://devfolio.co/hackathons"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full block" 
+                  className="w-full block"
                 >
                   <Button className="bg-gradient-to-r from-electric-teal to-neon-green hover:from-neon-green hover:to-electric-teal text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-electric-teal/50 focus:ring-offset-2 focus:ring-offset-dark-200">
                     Explore Events

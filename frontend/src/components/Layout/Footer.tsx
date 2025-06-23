@@ -1,98 +1,59 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
     <footer className="bg-dark-200 border-t border-white/10 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-electric-gradient rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">T</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
+          {/* Brand & Contact */}
+          <div className="col-span-1">
+            <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
+              <div className="w-7 h-7 bg-electric-gradient rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-base">T</span>
               </div>
-              <span className="text-2xl font-bold gradient-text">TeamBanalo</span>
+              <span className="text-xl font-bold gradient-text">TeamBanalo</span>
             </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Connect with talented developers and find your perfect hackathon teammates. 
-              Build amazing projects together and win more hackathons.
+            <p className="text-gray-400 text-sm mb-4 max-w-xs mx-auto md:mx-0">
+              Connecting talented developers to build winning hackathon teams.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                Twitter
-              </a>
-              <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
+            <div className="flex justify-center md:justify-start space-x-4 text-sm">
+              <a href="https://github.com/teambanalo" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-electric-blue transition-colors">
                 GitHub
               </a>
-              <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                LinkedIn
+              <a href="mailto:teambanalo@gmail.com" className="text-gray-400 hover:text-electric-blue transition-colors">
+                teambanalo@gmail.com
               </a>
             </div>
           </div>
 
-          {/* Product */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
-            <ul className="space-y-2">
+          {/* Empty column for spacing on larger screens */}
+          <div className="hidden lg:block col-span-1"></div> 
+
+          {/* Quick Links (Moved to the right) */}
+          <div className="col-span-1">
+            <h3 className="text-white font-semibold mb-4 text-lg">Quick Links</h3>
+            <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/find-teammates" className="text-gray-400 hover:text-electric-blue transition-colors">
                   Find Teammates
                 </Link>
               </li>
               <li>
-                <Link to="/hackathons" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Hackathons
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
+                <Link to="/how-it-works" className="text-gray-400 hover:text-electric-blue transition-colors">
                   How it Works
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Pricing
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Contact Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-electric-blue transition-colors">
-                  Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">
-            © 2025 TeamBanalo. All rights reserved.
+        <div className="border-t border-white/10 mt-10 pt-6 text-center">
+          <p className="text-gray-400 text-xs mb-1">
+            &copy; {new Date().getFullYear()} TeamBanalo. All rights reserved.
           </p>
-          <p className="text-gray-400 text-sm mt-2 sm:mt-0">
-            Made with ❤️ for the developer community
+          <p className="text-gray-400 text-xs">
+            Crafted for the developer community by **Musharaf** and **Bilal**.
           </p>
         </div>
       </div>
@@ -100,4 +61,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default Footer;  
