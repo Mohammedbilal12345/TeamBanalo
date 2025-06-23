@@ -109,6 +109,18 @@ const ViewProfile: React.FC = () => {
             </a>
           </div>
         )}
+
+        {/* NEW: Reach Out Button */}
+        {profile.email && ( // Only show button if email exists
+          <div className="mt-6">
+            <a
+              href={`mailto:${profile.email}`}
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-electric-blue hover:bg-electric-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-electric-blue"
+            >
+              Reach Out
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

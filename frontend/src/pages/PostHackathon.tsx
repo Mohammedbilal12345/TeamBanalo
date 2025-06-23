@@ -157,7 +157,9 @@ const PostHackathon: React.FC = () => {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="bg-dark-200 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-electric-blue focus:ring-electric-blue"
+                  // **UPDATED CLASS FOR ARBITRARY VARIANT**
+                  className="bg-dark-200 border-gray-600 text-gray-100 placeholder:text-gray-500 focus:border-electric-blue focus:ring-electric-blue
+                             [color-scheme:dark] [::-webkit-calendar-picker-indicator:filter:invert(1)_brightness(1.5)] [::-webkit-calendar-picker-indicator:cursor:pointer]"
                 />
               </div>
             </div>

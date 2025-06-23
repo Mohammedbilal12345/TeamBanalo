@@ -22,19 +22,16 @@ const Navbar: React.FC = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-100/80 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-4 group">
-            <img
-              src="/logo.png"
-              alt="TeamBanalo Logo"
-              className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
-            />
-            <span className="text-3xl font-bold gradient-text leading-none">
-              Team<span className="text-transparent bg-clip-text bg-gradient-to-r from-electric-blue to-purple-500">Banalo</span>
-            </span>
-          </Link>
+          {/* Logo - Made significantly larger */}
+         <Link to="/" className="flex items-center group">
+  <img
+    src="/logo.png"
+    alt="TeamBanalo Logo"
+    className="h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48 object-contain transition-transform duration-300 group-hover:scale-105"
+  />
+</Link>
 
           {/* Links for authenticated user */}
           {user && (
