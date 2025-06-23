@@ -165,4 +165,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-*Handcrafted with 💡 by Mohammed Bilal and TeamBanalo contributors.*
+*Handcrafted with 💡 by Mohammed Bilal and Mohammed Musharaf *
