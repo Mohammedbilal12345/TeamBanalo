@@ -654,10 +654,14 @@ const ExploreAndTeammates: React.FC = () => {
               <p className="text-gray-400 text-center py-8">No recommendations found at the moment. Try updating your profile or searching for other opportunities!</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+<<<<<<< HEAD
                 {recommendations
                 // .filter((rec) => rec.profile || rec.email) // Ensure we have at least email or profile
                 .filter((rec) => rec.score > 0) // Only show recommendations with a score greater than 0
                 .map((rec) => (
+=======
+                {recommendations.map((rec) => (
+>>>>>>> c7f4d95972f671819ac339c8c1c82eaee52a516d
                   <div
                     key={rec.user_id}
                     className="bg-dark-400/50 backdrop-blur-sm p-5 rounded-xl flex flex-col items-center text-center space-y-3 border border-dark-500 hover:border-electric-blue/50 transition-all duration-300 ease-in-out transform hover:scale-[1.03] shadow-md"

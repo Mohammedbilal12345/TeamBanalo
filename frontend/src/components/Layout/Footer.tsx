@@ -8,12 +8,20 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
           {/* Brand & Contact */}
           <div className="col-span-1">
+<<<<<<< HEAD
             <div className="flex items-center justify-center md:justify-start mb-3">
               <img
                 src="/logo-footer.png"
                 alt="TeamBanalo Logo"
                 className="h-12 w-auto object-contain"
               />
+=======
+            <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
+              <div className="w-7 h-7 bg-electric-gradient rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-base">T</span>
+              </div>
+              <span className="text-xl font-bold gradient-text">TeamBanalo</span>
+>>>>>>> c7f4d95972f671819ac339c8c1c82eaee52a516d
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-xs mx-auto md:mx-0">
               Connecting talented developers to build winning hackathon teams.
@@ -54,6 +62,7 @@ const Footer: React.FC = () => {
             &copy; {new Date().getFullYear()} TeamBanalo. All rights reserved.
           </p>
           <p className="text-gray-400 text-xs">
+<<<<<<< HEAD
             Crafted for the developer community by{' '}
             <a 
               href="https://github.com/MohammedMusharraf11/" 
@@ -73,6 +82,9 @@ const Footer: React.FC = () => {
               Bilal
             </a>
             .
+=======
+            Crafted for the developer community by **Musharaf** and **Bilal**.
+>>>>>>> c7f4d95972f671819ac339c8c1c82eaee52a516d
           </p>
         </div>
       </div>
@@ -80,4 +92,8 @@ const Footer: React.FC = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Footer;
+=======
+export default Footer;  
+>>>>>>> c7f4d95972f671819ac339c8c1c82eaee52a516d
