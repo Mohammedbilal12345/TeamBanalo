@@ -73,7 +73,7 @@ const Landing: React.FC = () => {
                 </Link>
               ) : (
                 <>
-                  <Link to="/signup">
+                  <Link to="/login">
                     <Button className="btn-electric text-lg px-8 py-4 h-auto animate-glow">
                       <User className="w-5 h-5 mr-2" />
                       Get Started Free
@@ -199,18 +199,13 @@ const Landing: React.FC = () => {
           
           {!user && (
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Link to="/signup">
+              <Link to="/login">
                 <Button className="btn-electric text-lg px-8 py-4 h-auto">
                   <Users className="w-5 h-5 mr-2" />
                   Start Building Teams
                 </Button>
               </Link>
-              <Link to="/find-teammates">
-                <Button variant="outline" className="btn-ghost text-lg px-8 py-4 h-auto">
-                  <Search className="w-5 h-5 mr-2" />
-                  Browse Developers
-                </Button>
-              </Link>
+              
             </div>
           )}
         </div>

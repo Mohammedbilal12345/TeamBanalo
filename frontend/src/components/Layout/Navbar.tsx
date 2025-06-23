@@ -2,6 +2,8 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+
 import { Compass, User as UserIcon, Settings, LogOut, Search } from 'lucide-react';
 
 const Navbar: React.FC = () => {
@@ -11,13 +13,13 @@ const Navbar: React.FC = () => {
   const isAuthPage = ['/login', '/signup', '/forgot-password'].includes(location.pathname);
   if (isAuthPage) return null;
 
-  const handleGetStarted = async () => {
-    try {
-      await loginWithGoogle(); // or prompt both providers via modal (optional)
-    } catch (err) {
-      console.error('OAuth error:', err);
-    }
-  };
+  const navigate = useNavigate();
+
+const handleGetStarted = () => {
+  navigate('/login');
+};
+
+  
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-100/80 backdrop-blur-xl border-b border-white/10">
