@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (email: string, password: string, name: string) => {
     setIsLoading(true);
     
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = "https://teambanalo-frontend.onrender.com/dashboard";
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     setIsLoading(true);
     
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = "https://teambanalo-frontend.onrender.com/";
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGitHub = async () => {
     setIsLoading(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    const redirectUrl = "https://teambanalo-frontend.onrender.com/dashboard";
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: { redirectTo: redirectUrl },
