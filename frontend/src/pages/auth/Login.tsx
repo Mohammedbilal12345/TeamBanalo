@@ -35,14 +35,14 @@ const Login = () => {
         </Button>
 
         {/* GitHub Button */}
-        <Button
+        {/* <Button
           onClick={loginWithGitHub}
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 bg-[#0d1117] text-white font-semibold py-2 rounded-lg hover:bg-[#161b22] transition duration-200"
         >
           <Github className="w-5 h-5" />
           Continue with GitHub
-        </Button>
+        </Button> */}
 
         {/* Footer note */}
         <p className="text-xs text-gray-500 text-center mt-6">By continuing, you agree to our terms and privacy policy.</p>
